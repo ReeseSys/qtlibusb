@@ -3,6 +3,9 @@
 #define QLIBUSB_H
 
 #include <QtCore/qiodevice.h>
+#include <QtCore/qmutex.h>
+#include <QtCore/qqueue.h>
+#include <QtCore/qtimer.h>
 
 #include <qlibusbglobal.h>
 
@@ -49,6 +52,7 @@ public:
 
 protected Q_SLOTS:
     void handleInData();
+    void unlockWrite();
 
 
 protected:
@@ -59,7 +63,9 @@ protected:
 private:
     QLibUsbPrivate * const d_ptr;
     QIODevice::OpenMode openMode;
-
+    QQueue<QByteArray> writeQueue;
+    QTimer writeTimer;
+    QMutex writeMutex;
 };
 
 #endif

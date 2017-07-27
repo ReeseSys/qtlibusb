@@ -139,6 +139,8 @@ bool QLibUsb::open(QIODevice::OpenMode mode)
     bool opened = d->open();
     if (opened) {
         openMode = mode;
+        writeTimer.setInterval(1000);
+        connect(&writeTimer, SIGNAL(timeout()), SLOT(unlockWrite()));
     }
 
     if (opened && mode | QIODevice::ReadOnly) {
@@ -176,6 +178,15 @@ void QLibUsb::handleInData()
     emit readyRead();
 }
 
+void QLibUsb::unlockWrite()
+{
+    writeMutex.unlock();
+    if (!writeQueue.isEmpty()) {
+        QByteArray data(writeQueue.dequeue());
+        writeData(data.constData(), data.length());
+    }
+}
+
 // QIODevice pure virtual methods
 
 qint64 QLibUsb::readData(char *data, qint64 maxlen)
@@ -187,6 +198,9 @@ qint64 QLibUsb::readData(char *data, qint64 maxlen)
         len = d->responseData(data, maxlen);
         // qDebug() << "QLibUsb readData:" << QString(data) << len;
     }
+
+    // unlock for write, assume have response to a write or will soon
+    QTimer::singleShot(QLibUsbPrivate::readInterval, this, SLOT(unlockWrite()));
     return len;
 }
 
@@ -195,5 +209,18 @@ qint64 QLibUsb::writeData(const char *data, qint64 len)
     Q_D(QLibUsb);
     // qDebug() << "QLibUsb writeData:" << QString(data) << len;
 
-    return d->writeData(data, len);
+    qint64 lenWritten = 0;
+    if (writeMutex.tryLock(QLibUsbPrivate::readInterval)) {
+        // can write data now
+        lenWritten = d->writeData(data, len);
+        writeTimer.start();
+    } else {
+        // queue up the write for later
+        writeQueue.enqueue(QByteArray(data, len));
+
+        // tell caller we did write the data
+        lenWritten = len;
+    }
+
+    return lenWritten;
 }
