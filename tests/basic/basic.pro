@@ -6,3 +6,4 @@ include (../../src/libusb/libusb-lib.pri)
 
 SOURCES += tst_basic.cpp
 
+QMAKE_CXXFLAGS += -std=c++11

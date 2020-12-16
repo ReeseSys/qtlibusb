@@ -7,7 +7,7 @@
 #include <QtCore/qqueue.h>
 #include <QtCore/qtimer.h>
 
-#include <qlibusbglobal.h>
+#include "qlibusbglobal.h"
 
 #define QIODEVICE_DEBUG
 

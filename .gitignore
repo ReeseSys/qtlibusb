@@ -39,3 +39,7 @@ Makefile*
 # QtCtreator CMake
 CMakeLists.txt.user*
 
+examples/sendreceive/sendreceive
+lib
+tests/basic/tst_basic
+

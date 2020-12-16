@@ -6,11 +6,11 @@ SOURCES += \
 
 HEADERS += \
     $$PWD/qlibusb.h \
-    $$PWD/qlibusb_p.h \
-    $$PWD/qlibusbglobal.h
+    $$PWD/qlibusb_p.h
 
 PUBLIC_HEADERS = \
-    $$PWD/qlibusb.h
+    $$PWD/qlibusb.h \
+    $$PWD/qlibusbglobal.h
 
 isEmpty($(LIBUSB_PREFIX)) {
 	INCLUDEPATH += /usr/local/include
